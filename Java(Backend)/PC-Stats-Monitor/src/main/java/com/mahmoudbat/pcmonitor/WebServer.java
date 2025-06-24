@@ -20,6 +20,12 @@ import java.nio.charset.StandardCharsets;
 
 public class WebServer {
 
+    private final OshiManager oshiManager;
+
+    public  WebServer(){
+        this.oshiManager = new OshiManager();
+    }
+
     /**
      * Starts the HTTP server on port 8080.
      * Registers the /OSHI-status endpoint with a custom handler.
@@ -31,7 +37,7 @@ public class WebServer {
        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
        // Register the /OSHI-status endpoint and assign a handler for it
-       server.createContext("/OSHI-status", new OshiHandler());
+       server.createContext("/OSHI-status", new OshiHandler(this.oshiManager));
 
        // Use the default executor (null)
        server.setExecutor(null);
@@ -52,6 +58,12 @@ public class WebServer {
 
     private static class OshiHandler implements HttpHandler {
 
+            // Create a new instance of the hardware monitor
+            private final OshiManager oshi;
+
+            public OshiHandler(OshiManager oshiManager){
+                this.oshi = oshiManager;
+            }
 
         /**
          * Handles incoming HTTP requests to the /OSHI-status endpoint.
@@ -64,8 +76,6 @@ public class WebServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
 
-            // Create a new instance of the hardware monitor
-            OshiManager oshi = new OshiManager();
 
             // Delay for 1 second to allow CPU usage reading to update
             try {
